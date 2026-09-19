@@ -1,0 +1,37 @@
+name: Synthetic Traffic Looper
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+jobs:
+  run-synthetic-traffic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E Journeys in a Loop (6 Hours)
+        env:
+          TARGET_SHOP_URL: https://aceso-target-shop.vercel.app/
+        run: |
+          for i in {1..36}; do
+            echo "Starting loop $i/36 at $(date)"
+            npm run test:e2e || echo "Playwright failed, but continuing loop..."
+            
+            if [ $i -lt 36 ]; then
+              echo "Finished run. Sleeping for 10 minutes..."
+              sleep 600
+            fi
+          done
