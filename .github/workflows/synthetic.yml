@@ -27,3 +27,6 @@ jobs:
           TARGET_SHOP_URL: https://aceso-target-shop.vercel.app/
         run: npm run test:e2e
 
+
+# Force re-registration of cron trigger
+
