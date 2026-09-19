@@ -1,0 +1,11 @@
+{
+  "name": "aceso-traffic-generator",
+  "version": "1.0.0",
+  "description": "Public repo to generate unlimited synthetic traffic for AcesoLoop",
+  "scripts": {
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0"
+  }
+}
