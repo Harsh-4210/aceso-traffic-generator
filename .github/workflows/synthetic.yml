@@ -3,7 +3,7 @@ name: Synthetic User Traffic Cron
 on:
   schedule:
     # Offset minutes to avoid top-of-the-hour GitHub Actions congestion
-    - cron: "7,17,27,37,47,57 * * * *"
+    - cron: "*/10 * * * *"
   workflow_dispatch:
 
 jobs:
@@ -29,4 +29,5 @@ jobs:
 
 
 # Force re-registration of cron trigger
+
 
