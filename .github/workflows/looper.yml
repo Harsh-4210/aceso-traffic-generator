@@ -5,6 +5,10 @@ on:
     - cron: "0 */6 * * *"
   workflow_dispatch:
 
+concurrency:
+  group: synthetic-traffic-looper
+  cancel-in-progress: false
+
 jobs:
   run-synthetic-traffic:
     runs-on: ubuntu-latest
@@ -26,11 +30,11 @@ jobs:
         env:
           TARGET_SHOP_URL: https://aceso-target-shop.vercel.app/
         run: |
-          for i in {1..36}; do
-            echo "Starting loop $i/36 at $(date)"
+          for i in {1..35}; do
+            echo "Starting loop $i/35 at $(date)"
             npm run test:e2e || echo "Playwright failed, but continuing loop..."
             
-            if [ $i -lt 36 ]; then
+            if [ $i -lt 35 ]; then
               echo "Finished run. Sleeping for 10 minutes..."
               sleep 600
             fi
