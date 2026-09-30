@@ -30,12 +30,30 @@ jobs:
         env:
           TARGET_SHOP_URL: https://aceso-target-shop.vercel.app/
         run: |
+          mkdir -p results
           for i in {1..35}; do
             echo "Starting loop $i/35 at $(date)"
-            npm run test:e2e || echo "Playwright failed, but continuing loop..."
+            npm run test:e2e || echo "Playwright run finished with exit code $? (logged)."
+            
+            # Archive individual run report
+            if [ -f test-results.json ]; then
+              cp test-results.json "results/run-$(printf "%02d" $i).json"
+            fi
             
             if [ $i -lt 35 ]; then
-              echo "Finished run. Sleeping for 10 minutes..."
+              echo "Finished loop $i. Sleeping for 10 minutes..."
               sleep 600
             fi
           done
+
+      - name: Upload Synthetic Traffic Telemetry Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: synthetic-traffic-results-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            results/
+            test-results.json
+            playwright-report/
+            test-results/
+          retention-days: 14

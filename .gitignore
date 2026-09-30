@@ -1,0 +1,7 @@
+node_modules/
+playwright-report/
+test-results/
+test-results.json
+results/
+.env
+.env.local
