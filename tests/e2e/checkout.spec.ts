@@ -3,25 +3,7 @@ import { test, expect } from "@playwright/test";
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
     window.__ACESO_SYNTHETIC__ = true;
-    window.__ACESO_EVENTS__ = window.__ACESO_EVENTS__ || [];
   });
-});
-
-test.afterEach(async ({ page }) => {
-  // Explicitly flush PostHog event queue and dispatch pagehide before browser teardown
-  await page.evaluate(async () => {
-    try {
-      window.dispatchEvent(new Event("pagehide"));
-      if (typeof (window as any).posthog?.flush === "function") {
-        await (window as any).posthog.flush();
-      } else if (typeof (window as any).posthog?._handle_unload === "function") {
-        (window as any).posthog._handle_unload();
-      }
-    } catch {}
-  });
-  // Await network idle so in-flight HTTP beacon/POST packets to PostHog leave the interface
-  await page.waitForLoadState("networkidle").catch(() => {});
-  await page.waitForTimeout(1000);
 });
 
 test("synthetic user completes full checkout journey", async ({ page }) => {
@@ -49,13 +31,4 @@ test("synthetic user completes full checkout journey", async ({ page }) => {
   await expect(page).toHaveURL(/.*order-success/);
   await expect(page.getByRole("heading", { name: /Order Confirmed!/i })).toBeVisible();
   await expect(page.getByText(/checkout_completed/i)).toBeVisible();
-
-  // 7. Explicit PostHog flush
-  await page.evaluate(async () => {
-    if (typeof (window as any).posthog?.flush === "function") {
-      await (window as any).posthog.flush();
-    }
-  });
-  await page.waitForLoadState("networkidle").catch(() => {});
-  await page.waitForTimeout(1000);
 });
