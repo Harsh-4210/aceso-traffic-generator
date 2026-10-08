@@ -2,6 +2,12 @@ import { test as base, expect } from "@playwright/test";
 
 export const test = base.extend({
   page: async ({ page }, runFixture, testInfo) => {
+    // Every journey is test traffic. The shop tags its PostHog events
+    // `synthetic: true` only when this flag is set before its scripts run, and
+    // the detector scores only that cohort. Set here so no spec can forget it.
+    await page.addInitScript(() => {
+      window.__ACESO_SYNTHETIC__ = true;
+    });
     const runId = process.env.ACESO_PREVIEW_RUN_ID;
     await page.addInitScript((previewRunId) => {
       window.__ACESO_PREVIEW_CONTEXT__ = { runId: previewRunId };
