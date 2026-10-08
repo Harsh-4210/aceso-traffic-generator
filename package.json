@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "Public repo to generate unlimited synthetic traffic for AcesoLoop",
   "scripts": {
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "benchmark": "node scripts/benchmark.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.40.0"
