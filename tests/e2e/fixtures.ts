@@ -13,7 +13,30 @@ export const test = base.extend({
       window.__ACESO_PREVIEW_CONTEXT__ = { runId: previewRunId };
     }, runId);
 
+    // Track the page's PostHog requests so the browser is not closed while some
+    // are still leaving it. Without this, a fast shop loses most events: on
+    // 2026-10-10, 30 passes against a local shop recorded 27 search_performed
+    // events out of about 210, and 33 checkout_started out of 60, so the
+    // detector's per-window minimum of 20 was barely met.
+    const pending = new Set<unknown>();
+    const isPosthog = (url: string) => /posthog\.com\//.test(url);
+    page.on("request", (request) => {
+      if (isPosthog(request.url())) pending.add(request);
+    });
+    page.on("requestfinished", (request) => pending.delete(request));
+    page.on("requestfailed", (request) => pending.delete(request));
+
     await runFixture(page);
+
+    // One short pause lets events fired by the last step be issued; then wait,
+    // for at most 3 s, until every PostHog request has finished.
+    if (!page.isClosed()) {
+      await page.waitForTimeout(250).catch(() => undefined);
+      const deadline = Date.now() + 3000;
+      while (pending.size > 0 && Date.now() < deadline && !page.isClosed()) {
+        await page.waitForTimeout(100).catch(() => undefined);
+      }
+    }
 
     // Send a positive heartbeat only after the browser journey passed. The
     // verifier checks these properties in PostHog against the Vercel build.
